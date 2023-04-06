@@ -1,5 +1,6 @@
 import os
 from openpyxl import load_workbook
+import sqlite3
 
 dir = '/Users/anthonyperpetua/Desktop/development/fantasy_hvac/test_lineups'
 
@@ -38,8 +39,48 @@ def captureLineup(worksheet):
 
 # loopThroughSpreadsheets(dir)
 
+cwd = os.getcwd()
+
+db_location = 'fantasy_logDB.sqlite'
+
+def connectDB(database):
+    '''
+    Connect to a local database
+    '''
+    try:
+        conn = sqlite3.connect(database)
+        return conn
+    except:
+        return print("Failed to connect to database")
+
 def createTable(conn, sql_statement):
     '''
     Create a table for each entry from a spreadsheet
     index: name(week), name, week, lineup[] 
     '''
+    try:
+        cur = conn.cursor()
+        cur.execute(sql_statement)
+    except: return print("Failed to execute your SQL statement")
+
+create_table_statement = '''
+CREATE TABLE IF NOT EXISTS fantasy_entries (
+idx TEXT PRIMARY KEY,
+name TEXT,
+week TEXT,
+mgr TEXT,
+ca1 TEXT,
+ca2 TEXT,
+prs1 TEXT,
+prs2 TEXT,
+opptotech1 TEXT,
+opptotech2 TEXT,
+flex1 TEXT,
+flex2 TEXT,
+flex3 TEXT,
+flex4 TEXT,
+branch TEXT
+)
+'''
+
+createTable(connectDB(db_location), create_table_statement)
