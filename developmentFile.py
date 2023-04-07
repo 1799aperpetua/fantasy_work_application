@@ -4,10 +4,12 @@ import sqlite3
 
 dir = '/Users/anthonyperpetua/Desktop/development/fantasy_hvac/test_lineups'
 
+# Need to implement something where we do not add duplicate data.  If an idx already exists, just skip that entry
+
 def loopThroughSpreadsheets(directory):
     '''
     This method loops through all of the files in the provided directory, accessing 
-    each xlsx file and printing out the name of the person who submitted it
+    each xlsx file, capturing the information in the template's cells, and making an entry to our database
     '''
 
     def captureLineup(worksheet):
@@ -49,13 +51,24 @@ def loopThroughSpreadsheets(directory):
     def submitEntry(conn, sql_statement, context):
         '''
         Helper Function
-        Takes a SQL statement (a person's entry) and commits it to the database
+        Takes a SQL statement (a person's entry) and commits it to the database, if the person has not yet submitted a lineup for that week
         '''
         cur = conn.cursor()
+        
+        # Select all values in the idx column
+        select_idx_statement = 'SELECT idx FROM fantasy_entries;'
+        cur.execute(select_idx_statement)
+        idx_list = cur.fetchall()
+        #print(idx_list)
+        
+        idx = context['name'] + '(' + context['week'] + ')' # Build our current index
+        if idx in idx_list:
+            return print(f"You've already enterred {context['name']} for the week: {context['week']}")
+
         cur.execute(sql_statement, context)
         conn.commit()
-        print("You submitted an entry to the database!")
         conn.close()
+        return print("You submitted an entry to the database!")
 
     print(f"Looping through excel files in the directory passed in")
     for filename in os.listdir(directory): # for each file in the passed directory
