@@ -28,7 +28,7 @@ def loopThroughSpreadsheets(directory):
             for idx, cell in enumerate(row):
                 data.append(cell.value)
 
-        print(f'Week {week} Lineup for: ', name, "\n", data, "\n-----------------")
+        print(f'Week {week} Lineup for: ', name, "\n", data, "\n------------------------------------------------------------------")
         return data
     
     def buildEntry(data):
@@ -55,13 +55,16 @@ def loopThroughSpreadsheets(directory):
         '''
         cur = conn.cursor()
         
-        # Select all values in the idx column
+        # Select all values in the idx column and put them in a list
         select_idx_statement = 'SELECT idx FROM fantasy_entries;'
         cur.execute(select_idx_statement)
-        idx_list = cur.fetchall()
-        #print(idx_list)
+        idx_tuples = cur.fetchall()
+        idx_list = [x[0] for x in idx_tuples]
+        #print("Index List:", idx_list)
         
-        idx = context['name'] + '(' + context['week'] + ')' # Build our current index
+        # Check if our current person has already submitted a sheet for this week
+        idx = context['name'] + '(' + str(context['week']) + ')'
+        #print("This Index:", idx)
         if idx in idx_list:
             return print(f"You've already enterred {context['name']} for the week: {context['week']}")
 
