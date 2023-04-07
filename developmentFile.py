@@ -2,10 +2,6 @@ import os
 from openpyxl import load_workbook
 import sqlite3
 
-dir = '/Users/anthonyperpetua/Desktop/development/fantasy_hvac/test_lineups'
-
-# Need to implement something where we do not add duplicate data.  If an idx already exists, just skip that entry
-
 def loopThroughSpreadsheets(directory):
     '''
     This method loops through all of the files in the provided directory, accessing 
@@ -34,7 +30,9 @@ def loopThroughSpreadsheets(directory):
     def buildEntry(data):
         '''
         Helper Function
-        Uses data captured in a spreadsheet to build a SQL entry
+        Uses data captured in a spreadsheet to build a SQL entry for the fantasy_entries table
+        :param: data - 
+        :
         '''
 
         idx = str(data[0]) + "(" + str(data[1]) + ")"
@@ -51,7 +49,7 @@ def loopThroughSpreadsheets(directory):
     def submitEntry(conn, sql_statement, context):
         '''
         Helper Function
-        Takes a SQL statement (a person's entry) and commits it to the database, if the person has not yet submitted a lineup for that week
+        Takes a SQL statement (a person's entry) and commits it to the  database, if the person has not yet submitted a lineup for that week
         '''
         cur = conn.cursor()
         
@@ -86,8 +84,6 @@ def loopThroughSpreadsheets(directory):
         
 # loopThroughSpreadsheets(dir)
 
-#cwd = os.getcwd()
-
 db_location = 'fantasy_logDB.sqlite'
 def connectDB(database):
     '''
@@ -107,12 +103,15 @@ def createTable(conn, sql_statement):
     try:
         cur = conn.cursor()
         cur.execute(sql_statement)
+        conn.commit()
+        conn.close()
+        return print("Successfully created your table!")
     except: 
         return print("Failed to execute your SQL statement")
 
 create_table_statement = '''
 CREATE TABLE IF NOT EXISTS fantasy_entries (
-idx TEXT PRIMARY KEY,
+idx TEXT PRIMARY KEY UNIQUE NOT NULL,
 name TEXT,
 week TEXT,
 mgr TEXT,
@@ -124,6 +123,25 @@ branch TEXT
 )
 '''
 
-# createTable(connectDB(db_location), create_table_statement)
 
-loopThroughSpreadsheets(dir)
+# This is the table that will hold each player's score for each week
+# i.e. ID-13, Mike S, Comfort Advisor, 43.0, 39.3, None, ..., None
+create_scoring_table_statement = '''
+CREATE TABLE IF NOT EXISTS player_scores (
+player_id INTEGER PRIMARY KEY UNIQUE NOT NULL,
+name TEXT UNIQUE,
+role TEXT,
+score1 REAL, score2 REAL, score3 REAL, score4 REAL,
+score5 REAL, score6 REAL, score7 REAL, score8 REAL,
+score9 REAL, score10 REAL, score11 REAL, score12 REAL,
+score13 REAL, score14 REAL, score15 REAL, score16 REAL
+)
+'''
+
+# createTable(connectDB(db_location), create_table_statement)
+createTable(connectDB(db_location), create_scoring_table_statement)
+
+# Below will run the program and add any un-added lineup spreadsheets to our database
+dir = '/Users/anthonyperpetua/Desktop/development/fantasy_hvac/test_lineups'
+
+#loopThroughSpreadsheets(dir)
